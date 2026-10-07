@@ -184,3 +184,19 @@ describe('Normal variável ao longo da estaca (axialShape)', () => {
     expect(p1).toBeGreaterThan(p0)
   })
 })
+
+import { weakestEnvelope } from '../soil'
+import { buildLateralProfile } from './soilProfile'
+describe('envoltória dos furos (análise lateral)', () => {
+  const mk = (id: string, ns: number[], wl: number) => ({ id, waterLevel: wl, layers: ns.map((n, i) => ({ depth: i + 1, nspt: n, soil: 'areia' as const })) })
+  it('adota o menor N por metro, o NA mais raso e o furo mais curto', () => {
+    const env = weakestEnvelope([mk('A', [5, 10, 20, 30], 3), mk('B', [8, 4, 25], 2)])
+    expect(env.layers.map((l) => l.nspt)).toEqual([5, 4, 20])
+    expect(env.waterLevel).toBe(2)
+    expect(buildLateralProfile(env).layers.length).toBe(3)
+  })
+  it('um único furo devolve o próprio furo', () => {
+    const a = mk('A', [5, 6], 1)
+    expect(weakestEnvelope([a])).toBe(a)
+  })
+})

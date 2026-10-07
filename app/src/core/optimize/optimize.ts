@@ -17,7 +17,7 @@
  */
 import { PILE_LABEL, pileArea, type PileType } from '../pile'
 import type { SptBorehole } from '../soil'
-import { SOIL_TYPES } from '../soil'
+import { SOIL_TYPES, weakestEnvelope } from '../soil'
 import type { LoadCombination } from '../loads'
 import {
   admissibleLoad,
@@ -193,6 +193,8 @@ export interface OptimizeInput {
   blockAlpha?: number
   /** Opções do perfil lateral (φ', Su = fator·N, sobrescritas por camada do primeiro furo selecionado). */
   lateralOptions?: ProfileOptions
+  /** Furo da análise lateral: 'envoltoria' = camada mais fraca entre os furos selecionados (padrão, conservador); 'primeiro' = só o primeiro. */
+  lateralHoles?: 'envoltoria' | 'primeiro'
   /** Edições estruturais (Tab. 4, cobrimento, aço, taxa mínima…). */
   structural?: StructuralOptions
   /** Método de dimensionamento das armaduras do bloco. */
@@ -422,6 +424,15 @@ function costOf(inp: OptimizeInput, type: PileType, D: number, L: number, n: num
 
 // ------------------------------------------------------------------ avaliação de um candidato
 
+/** Perfil lateral conforme `lateralHoles`; na envoltória as sobrescritas por camada (feitas num furo) não se aplicam. */
+function lateralProfileOf(inp: OptimizeInput) {
+  if ((inp.lateralHoles ?? 'envoltoria') === 'primeiro' || inp.boreholes.length === 1) return buildLateralProfile(inp.boreholes[0], inp.lateralOptions ?? {})
+  const env = weakestEnvelope(inp.boreholes)
+  const prof = buildLateralProfile(env, { ...(inp.lateralOptions ?? {}), overrides: undefined })
+  prof.warnings.push(`Análise lateral com a envoltória dos furos ${inp.boreholes.map((b) => b.id).join(', ')} (menor N_SPT em cada metro, NA mais raso, profundidade do furo mais curto); sobrescritas por camada não se aplicam.`)
+  return prof
+}
+
 interface Ctx {
   inp: OptimizeInput
   lateralProfile: ReturnType<typeof buildLateralProfile>
@@ -506,7 +517,7 @@ function eiModelFor(inp: OptimizeInput, D: number, d: StructuralDesign): GroupIn
  * do momento-curvatura DESSA armadura (`design` com `longitudinal`). Devolve os novos conjuntos de esforços.
  */
 export function reanalyzeELU(inp: OptimizeInput, c: Candidate, design: StructuralDesign) {
-  const ctx: Ctx = { inp, lateralProfile: buildLateralProfile(inp.boreholes[0], inp.lateralOptions ?? {}) }
+  const ctx: Ctx = { inp, lateralProfile: lateralProfileOf(inp) }
   const eluN = (inp.blockUnitWeight ?? 25) * c.block.volume * (inp.blockWeightFactorELU ?? 1.4)
   const elu = inp.combos.filter((q) => q.state === 'ELU')
   const model = eiModelFor(inp, c.diameter, design)
@@ -515,7 +526,10 @@ export function reanalyzeELU(inp: OptimizeInput, c: Candidate, design: Structura
   const res = elu.map((combo) => ({ combo, res: analyzeGroup(groupInput(ctx, c.layout, c.type, c.diameter, c.length, combo, eluN, model, axELU)) }))
   const converged = res.every((r) => r.res.converged)
   const unstable = res.some((r) => r.res.warnings.some((w) => w.includes('Instabilidade')))
-  return { ...demandSets(res, inp.execEccentricity ?? 0, axELU), converged, unstable }
+  // as reações axiais mudam com a rigidez da armadura (acoplamento do grupo): o bloco é redimensionado com elas
+  const reactions = res.map(({ combo, res: r }) => ({ name: combo.name, P: r.piles.map((p) => p.axial), Nsd: combo.fz }))
+  const blockDesign = designBlock({ ...c.blockInput, combos: reactions })
+  return { ...demandSets(res, inp.execEccentricity ?? 0, axELU), converged, unstable, blockDesign }
 }
 
 /** Resultado da verificação de uma locação ajustada (estacas fora da posição de projeto). */
@@ -541,7 +555,7 @@ export interface AsBuilt {
  * comprimento e armadura; refaz o grupo em ELS e ELU, o bloco (com as opções `blockOpts`) e devolve os novos esforços.
  */
 export function reevaluateWithLayout(inp: OptimizeInput, c: Candidate, points: Layout['points'], design: StructuralDesign, blockOpts: Partial<BlockInput> = {}): AsBuilt {
-  const ctx: Ctx = { inp, lateralProfile: buildLateralProfile(inp.boreholes[0], inp.lateralOptions ?? {}) }
+  const ctx: Ctx = { inp, lateralProfile: lateralProfileOf(inp) }
   const layout: Layout = { ...c.layout, id: `${c.layout.id}*`, label: 'Locação ajustada', points }
   const D = c.diameter
   const L = c.length
@@ -762,7 +776,7 @@ function* optimizeSteps(inp: OptimizeInput): Generator<Progress, OptimizeResult>
   const warnings: string[] = []
   const rejected: Rejection[] = []
   if (inp.boreholes.length === 0) throw new Error('Selecione ao menos uma sondagem.')
-  const profile = buildLateralProfile(inp.boreholes[0], inp.lateralOptions ?? {}) // exige NA informado
+  const profile = lateralProfileOf(inp) // exige NA informado
   const ctx: Ctx = { inp, lateralProfile: profile }
   const proxy = costIsZero(inp.costs)
   if (proxy) warnings.push('Custos zerados: classificação por volume de concreto (estacas + bloco) e massa de aço. Informe os custos para ranquear em R$.')

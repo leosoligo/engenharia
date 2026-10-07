@@ -324,3 +324,8 @@ Padrão da folga passou a **Bastos, grande porte** (15 cm da face da estaca à b
 
 ## 35. Publicação na web (GitHub Pages)
 Workflow `.github/workflows/pages.yml`: a cada push na `main` (ou execução manual) roda `tsc -b` e `vite build` e publica `app/dist/index.html` no GitHub Pages. Como o build é de arquivo único, não precisa de `base`. Endereço esperado: https://leosoligo.github.io/engenharia/. Requer, uma vez, Settings → Pages → Source = "GitHub Actions". O site é público (qualquer pessoa com o link acessa); os dados do usuário ficam só no navegador dele.
+
+## 36. Análise lateral com vários furos e reanálise com bloco (v1.19)
+**Análise lateral**: novo parâmetro "Furo da análise lateral" (Parâmetros → Grupo e bloco). Padrão **envoltória**: em cada metro vale a camada de menor N_SPT entre os furos selecionados, NA mais raso e profundidade do furo mais curto (`weakestEnvelope`, critério conservador de projeto, não de norma; sobrescritas por camada não se aplicam e o aviso diz isso). Opção "primeiro furo" mantém o comportamento anterior.
+**Reanálise com a armadura editada**: além dos esforços, o bloco é redimensionado com as novas reações axiais (o ranking e o custo continuam os da armadura automática). A reanálise já é completa em uma passada, pois a armadura é fixa.
+**Pesquisa (sem fonte confirmada, nada implementado)**: Antunes & Cabral (1996, III SEFE) — a definição de N_b e das faixas não foi encontrada na web; NBR 16258 (içamento/compressão de pré-moldadas) — só o escopo é público; regra de Feld — só a descrição "−1/16 por estaca vizinha", sem a convenção de vizinhança confirmada em livro.

@@ -65,3 +65,25 @@ export function soilClass3(s: SoilType): SoilClass3 {
 export function nsptAt(b: SptBorehole, depth: number): SptLayer | undefined {
   return b.layers.find((l) => l.depth === depth)
 }
+
+/**
+ * Furo-envoltória para a análise lateral: em cada metro adota a camada de menor N_SPT entre os furos
+ * (solo do furo mais fraco), nível d'água mais raso e profundidade do furo mais curto. É um critério conservador
+ * de projeto (não vem de norma); com um único furo devolve o próprio furo.
+ */
+export function weakestEnvelope(holes: SptBorehole[]): SptBorehole {
+  if (holes.length === 1) return holes[0]
+  const depth = Math.min(...holes.map((h) => h.layers.length))
+  const layers: SptLayer[] = []
+  for (let z = 1; z <= depth; z++) {
+    let pick: SptLayer | undefined
+    for (const h of holes) {
+      const l = nsptAt(h, z)
+      if (l && (!pick || l.nspt < pick.nspt)) pick = l
+    }
+    if (pick) layers.push({ ...pick, depth: z })
+  }
+  const wls = holes.map((h) => h.waterLevel)
+  const waterLevel = wls.some((w) => w === undefined || Number.isNaN(w)) ? undefined : Math.min(...(wls as number[]))
+  return { id: `envoltória (${holes.map((h) => h.id).join(', ')})`, waterLevel, layers }
+}
