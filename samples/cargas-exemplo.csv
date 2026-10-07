@@ -1,0 +1,11 @@
+# Esforços do pilar no topo do bloco. kN e kN·m. fz > 0 = compressão. X,Y em planta, Z para cima (mão direita).
+# mx > 0 aumenta a compressão nas estacas com y menor; my > 0, nas com x maior.
+pilar;combinacao;tipo;fx;fy;fz;mx;my;mz
+P1;Permanente+sobrecarga;ELS;15;0;1400;0;20;0
+P1;Vento X;ELS;40;0;1100;0;60;0
+P1;Permanente+sobrecarga;ELU;22;0;1960;0;28;0
+P1;Vento X;ELU;60;0;1500;0;90;0
+P2;Permanente+sobrecarga;ELS;10;5;2600;10;25;0
+P2;Vento Y;ELS;8;45;2100;70;15;0
+P2;Permanente+sobrecarga;ELU;14;7;3640;14;35;0
+P2;Vento Y;ELU;12;70;2900;105;22;0

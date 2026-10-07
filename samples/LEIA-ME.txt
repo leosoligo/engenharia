@@ -1,0 +1,19 @@
+Arquivos de exemplo para testar o Estakalc (abra Estakalc.html)
+
+sondagem-exemplo.csv        -> passo 1 "Sondagens" > "Importar CSV" (2 furos com NA: SP-01 = 6 m, SP-02 = 4,5 m)
+cargas-exemplo.csv          -> passo 2 "Cargas" > "Importar CSV" (pilares P1 e P2, ELS e ELU)
+cargas-RCI-T1.csv           -> passo 2 "Cargas" > "Importar CSV": Torre 1 do projeto RCI-EST-T1-LOC-PL01 (P101 a P119, 7 combinacoes
+                               caracteristicas em ELS e as mesmas x 1,4 em ELU; kN e kN.m). Traz as secoes dos pilares (colunas ax e ay, em cm); sondagem nao consta.
+Fundacao_Combinacoes.xlsx   -> passo 2 "Cargas" > "Importar do Eberick (.xlsx)": relatorio de esforcos nas fundacoes da AltoQi
+                               (20 elementos, B1 a B20; valores caracteristicos em tf e kgf.m). O ELU nao vem no arquivo:
+                               o Estakalc gera ELU = gamaf x ELS (padrao 1,4). Secao do pilar e sondagem nao vem no arquivo.
+
+Roteiro (Eberick):
+1. Passo 1: carregue as sondagens (o exemplo "Carregar exemplo" traz SP-01 e SP-02).
+2. Passo 2: importe o .xlsx, confira as premissas, escolha combinacoes criticas e importe os elementos.
+3. Ajuste a secao do pilar de cada elemento (padrao 40 x 40 cm) e a sondagem de cada um.
+4. "Todos os pilares" > Calcular. Abra um pilar para ver bloco, armadura, locacao e exportar DXF/memorial.
+
+sondagem-TCC-Pacchioni-SP03.csv e cargas-TCC-Pacchioni.csv -> dados do TCC de Pacchioni (UNESP, 2022), para comparar com o trabalho:
+                               sondagem SP.03 (NA seco; 19 m, N = 60 no ultimo metro) e Nd dos 28 pilares (ELU = Nd; ELS = Nd/1,4; sem momentos),
+                               com as secoes (ax = comprimento, ay = base). No trabalho: estaca helice Ø70, base do bloco a 6 m, blocos fck 35.

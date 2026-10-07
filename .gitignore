@@ -1,0 +1,7 @@
+Fontes/
+Normas/
+.tmp/
+app/dist/
+node_modules/
+.claude/settings.local.json
+samples/cargas-RCI-T1.csv

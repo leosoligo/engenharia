@@ -1,0 +1,60 @@
+# Cargas do projeto de Pacchioni (TCC UNESP Ilha Solteira, 2022), Tabela 4: Nd (kN) e seção dos pilares (comprimento = ax em X, base = ay em Y, em cm).
+# O trabalho dá só o esforço normal de cálculo Nd: ELU = Nd; ELS = Nd/1,4 (γf assumido). Sem momentos nem forças horizontais (não informados).
+# O trabalho une P19 e P20 num bloco de 6 estacas (use 'Bloco comum a dois pilares' no passo Cargas, com as coordenadas da locação).
+pilar;combinacao;tipo;fx;fy;fz;mx;my;mz;ax;ay
+P1;Nd do projeto (ELS = Nd/1,4);ELS;0;0;2549.74;0;0;0;140;25
+P1;Nd do projeto (ELU);ELU;0;0;3569.64;0;0;0;140;25
+P2;Nd do projeto (ELS = Nd/1,4);ELS;0;0;5848.99;0;0;0;204;30
+P2;Nd do projeto (ELU);ELU;0;0;8188.59;0;0;0;204;30
+P3;Nd do projeto (ELS = Nd/1,4);ELS;0;0;4917.36;0;0;0;129;30
+P3;Nd do projeto (ELU);ELU;0;0;6884.30;0;0;0;129;30
+P4;Nd do projeto (ELS = Nd/1,4);ELS;0;0;4910.36;0;0;0;129;30
+P4;Nd do projeto (ELU);ELU;0;0;6874.50;0;0;0;129;30
+P5;Nd do projeto (ELS = Nd/1,4);ELS;0;0;6115.18;0;0;0;204;30
+P5;Nd do projeto (ELU);ELU;0;0;8561.25;0;0;0;204;30
+P6;Nd do projeto (ELS = Nd/1,4);ELS;0;0;2577.76;0;0;0;140;22
+P6;Nd do projeto (ELU);ELU;0;0;3608.87;0;0;0;140;22
+P7;Nd do projeto (ELS = Nd/1,4);ELS;0;0;1982.36;0;0;0;105;25
+P7;Nd do projeto (ELU);ELU;0;0;2775.30;0;0;0;105;25
+P8;Nd do projeto (ELS = Nd/1,4);ELS;0;0;3089.11;0;0;0;100;32
+P8;Nd do projeto (ELU);ELU;0;0;4324.75;0;0;0;100;32
+P9;Nd do projeto (ELS = Nd/1,4);ELS;0;0;3915.68;0;0;0;180;22
+P9;Nd do projeto (ELU);ELU;0;0;5481.95;0;0;0;180;22
+P10;Nd do projeto (ELS = Nd/1,4);ELS;0;0;3054.09;0;0;0;180;19
+P10;Nd do projeto (ELU);ELU;0;0;4275.72;0;0;0;180;19
+P11;Nd do projeto (ELS = Nd/1,4);ELS;0;0;3761.57;0;0;0;180;22
+P11;Nd do projeto (ELU);ELU;0;0;5266.20;0;0;0;180;22
+P12;Nd do projeto (ELS = Nd/1,4);ELS;0;0;4146.84;0;0;0;149;28
+P12;Nd do projeto (ELU);ELU;0;0;5805.57;0;0;0;149;28
+P13;Nd do projeto (ELS = Nd/1,4);ELS;0;0;3306.26;0;0;0;100;28
+P13;Nd do projeto (ELU);ELU;0;0;4628.76;0;0;0;100;28
+P14;Nd do projeto (ELS = Nd/1,4);ELS;0;0;1611.10;0;0;0;105;22
+P14;Nd do projeto (ELU);ELU;0;0;2255.54;0;0;0;105;22
+P15;Nd do projeto (ELS = Nd/1,4);ELS;0;0;1807.24;0;0;0;105;25
+P15;Nd do projeto (ELU);ELU;0;0;2530.13;0;0;0;105;25
+P16;Nd do projeto (ELS = Nd/1,4);ELS;0;0;3292.25;0;0;0;100;32
+P16;Nd do projeto (ELU);ELU;0;0;4609.15;0;0;0;100;32
+P17;Nd do projeto (ELS = Nd/1,4);ELS;0;0;4420.02;0;0;0;149;28
+P17;Nd do projeto (ELU);ELU;0;0;6188.03;0;0;0;149;28
+P18;Nd do projeto (ELS = Nd/1,4);ELS;0;0;3215.20;0;0;0;180;19
+P18;Nd do projeto (ELU);ELU;0;0;4501.28;0;0;0;180;19
+P19;Nd do projeto (ELS = Nd/1,4);ELS;0;0;3894.66;0;0;0;180;22
+P19;Nd do projeto (ELU);ELU;0;0;5452.53;0;0;0;180;22
+P20;Nd do projeto (ELS = Nd/1,4);ELS;0;0;3901.66;0;0;0;180;22
+P20;Nd do projeto (ELU);ELU;0;0;5462.33;0;0;0;180;22
+P21;Nd do projeto (ELS = Nd/1,4);ELS;0;0;3096.11;0;0;0;100;28
+P21;Nd do projeto (ELU);ELU;0;0;4334.56;0;0;0;100;28
+P22;Nd do projeto (ELS = Nd/1,4);ELS;0;0;1653.13;0;0;0;105;22
+P22;Nd do projeto (ELU);ELU;0;0;2314.38;0;0;0;105;22
+P23;Nd do projeto (ELS = Nd/1,4);ELS;0;0;2283.56;0;0;0;140;25
+P23;Nd do projeto (ELU);ELU;0;0;3196.98;0;0;0;140;25
+P24;Nd do projeto (ELS = Nd/1,4);ELS;0;0;6150.20;0;0;0;204;30
+P24;Nd do projeto (ELU);ELU;0;0;8610.28;0;0;0;204;30
+P25;Nd do projeto (ELS = Nd/1,4);ELS;0;0;5092.48;0;0;0;129;30
+P25;Nd do projeto (ELU);ELU;0;0;7129.47;0;0;0;129;30
+P26;Nd do projeto (ELS = Nd/1,4);ELS;0;0;4994.41;0;0;0;129;30
+P26;Nd do projeto (ELU);ELU;0;0;6992.18;0;0;0;129;30
+P27;Nd do projeto (ELS = Nd/1,4);ELS;0;0;6304.31;0;0;0;204;30
+P27;Nd do projeto (ELU);ELU;0;0;8826.03;0;0;0;204;30
+P28;Nd do projeto (ELS = Nd/1,4);ELS;0;0;2381.63;0;0;0;140;22
+P28;Nd do projeto (ELU);ELU;0;0;3334.28;0;0;0;140;22
