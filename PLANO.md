@@ -321,3 +321,6 @@ O normal deixou de ser constante no dimensionamento estrutural: N(z) = N·(1 −
 
 ## 34. Folga do bloco padrão, afastamento das estacas e utilização por estaca (v1.18)
 Padrão da folga passou a **Bastos, grande porte** (15 cm da face da estaca à borda; Ø70 a 3·dE → bloco 310 cm, antes 380 cm pela regra de Campos dE + 15 cm eixo–borda; concreto do bloco −33 % no P3 do TCC). A regra de Campos continua como opção; projetos salvos mantêm a escolha. Novo parâmetro: **afastamento entre eixos (× diâmetro)**, vazio = mínimo da literatura por tipo. Planta de estacas mostra carga/Padm e % de utilização.
+
+## 35. Publicação na web (GitHub Pages)
+Workflow `.github/workflows/pages.yml`: a cada push na `main` (ou execução manual) roda `tsc -b` e `vite build` e publica `app/dist/index.html` no GitHub Pages. Como o build é de arquivo único, não precisa de `base`. Endereço esperado: https://leosoligo.github.io/engenharia/. Requer, uma vez, Settings → Pages → Source = "GitHub Actions". O site é público (qualquer pessoa com o link acessa); os dados do usuário ficam só no navegador dele.
