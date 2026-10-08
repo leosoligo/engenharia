@@ -37,8 +37,9 @@ export default function LoadsPage({ project, setProject, onExample, onBack, onNe
   const uF = tf ? 'tf' : 'kN'
   const uM = tf ? 'tf·m' : 'kN·m'
   const ownHoles = project.pillars?.[project.pillar]?.holes ?? []
-  const setInfo = (patch: Partial<{ ax: number; ay: number; holes: string[] }>) =>
-    setProject({ ...project, pillars: { ...project.pillars, [project.pillar]: { ax: sec.ax, ay: sec.ay, holes: ownHoles, ...patch } } })
+  const arr = project.pillars?.[project.pillar]?.arranque
+  const setInfo = (patch: Partial<{ ax: number; ay: number; holes: string[]; arranque: { phiMm: number; hook?: boolean } | undefined }>) =>
+    setProject({ ...project, pillars: { ...project.pillars, [project.pillar]: { ax: sec.ax, ay: sec.ay, holes: ownHoles, ...project.pillars?.[project.pillar], ...patch } } })
   const importCombos = (cs: LoadCombination[], sections: Record<string, { ax: number; ay: number }>) => {
     const names = new Set(cs.map((c) => c.pillar))
     const pillars = { ...project.pillars }
@@ -148,6 +149,16 @@ export default function LoadsPage({ project, setProject, onExample, onBack, onNe
               <label className="fld"><span>Seção ax (cm)</span><input type="number" min={10} disabled={!!project.joins?.[project.pillar]} value={sec.ax} onChange={(e) => setInfo({ ax: +e.target.value })} /></label>
               <label className="fld"><span>ay (cm)</span><input type="number" min={10} disabled={!!project.joins?.[project.pillar]} value={sec.ay} onChange={(e) => setInfo({ ay: +e.target.value })} /></label>
               <button className="ghost" onClick={removePillar}>Remover este pilar</button>
+            </div>
+            <div className="row">
+              <label className="fld"><span>Arranque do pilar Ø (mm, opcional)</span>
+                <select value={arr?.phiMm ?? ''} onChange={(e) => setInfo({ arranque: e.target.value ? { phiMm: +e.target.value, hook: arr?.hook } : undefined })}>
+                  <option value="">Não verificar</option>
+                  {[10, 12.5, 16, 20, 25, 32].map((p) => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </label>
+              {arr && <label className="inline"><input type="checkbox" checked={!!arr.hook} onChange={(e) => setInfo({ arranque: { ...arr, hook: e.target.checked } })} /> Gancho na ponta (α1 = 0,7)</label>}
+              <p className="hint">Se informado, a altura do bloco passa a comportar a ancoragem das barras de arranque (l_b pela NBR 6118, 9.4.2; confira o item 22.7.4.1.4 da NBR 6118:2026).</p>
             </div>
             <div className="row">
               <span className="hint">Sondagem deste pilar:</span>

@@ -40,6 +40,8 @@ describe('Verificação de armadura editada', () => {
   it('reanálise com a mesma armadura reproduz os esforços; com mais armadura converge', () => {
     const same = reanalyzeELU(inp, c, c.design)
     expect(same.converged).toBe(true)
+    expect(same.blockDesign.feasible).toBe(c.blockDesign.feasible)
+    expect(Math.abs(same.blockDesign.quantities.concreteM3 / c.blockDesign.quantities.concreteM3 - 1)).toBeLessThan(0.05)
     expect(same.max.value / c.maxMomentELU.value).toBeGreaterThan(0.9)
     expect(same.max.value / c.maxMomentELU.value).toBeLessThan(1.1)
     const more = { ...c.design, longitudinal: { ...c.design.longitudinal!, n: c.design.longitudinal!.n + 6 } }

@@ -72,3 +72,17 @@ describe('Bloco sobre estacas — exemplo resolvido de Campos (4 estacas)', () =
     expect(r.warnings.join(' ')).toContain('tracionada')
   })
 })
+
+import { pillarAnchorage } from './anchorage'
+describe('arranque do pilar', () => {
+  it('lb de Ø16 CA-50 em C30 e efeito do gancho', () => {
+    const a = pillarAnchorage({ phiMm: 16 }, 30, 2)
+    // fctd = 0,7·0,3·30^(2/3)/1,4 = 1,448 MPa; fbd = 3,258 MPa; fyd = 434,8 MPa; lb = 0,004·434,8/3,258 ≈ 0,534 m
+    expect(a.lb).toBeCloseTo(0.534, 2)
+    expect(a.lbNec).toBeCloseTo(a.lb, 6)
+    const h = pillarAnchorage({ phiMm: 16, hook: true }, 30, 2)
+    expect(h.lbNec).toBeCloseTo(0.7 * a.lb, 6)
+    expect(h.hMin).toBeLessThan(a.hMin)
+    expect(a.hMin).toBeGreaterThan(a.lbNec)
+  })
+})

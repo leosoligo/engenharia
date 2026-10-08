@@ -18,6 +18,8 @@ export interface Settings {
   /** Capacidade à tração = fator × atrito lateral à compressão (Campos; Velloso & Lopes: redução da ordem de 30 %). */
   tensionShaftFactor: number
   headFixity: 'engastada' | 'articulada'
+  /** Furo da análise lateral: envoltória (camada mais fraca entre os selecionados) ou só o primeiro. */
+  lateralHoles: 'envoltoria' | 'primeiro'
   execEccentricityCm: number
   blockUnitWeight: number
   blockWeightFactorELU: number
@@ -104,6 +106,7 @@ export const DEFAULT_SETTINGS: Settings = {
   permitTension: false,
   tensionShaftFactor: 0.7,
   headFixity: 'engastada',
+  lateralHoles: 'envoltoria',
   execEccentricityCm: 0,
   blockUnitWeight: 25,
   blockWeightFactorELU: 1.4,

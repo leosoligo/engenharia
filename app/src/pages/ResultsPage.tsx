@@ -47,7 +47,7 @@ export default function ResultsPage({ project, setProject, settings, cache, setC
   const [fixed, setFixed] = useState<Fixed>({})
   const [armors, setArmors] = useState<Record<string, PileArmor>>({})
   const [blockEdits, setBlockEdits] = useState<Record<string, BlockEdit>>({})
-  const [reana, setReana] = useState<Record<string, { demands: Candidate['demands']; elu: Candidate['profiles']['elu']; max: Candidate['maxMomentELU']; armorKey: string }>>({})
+  const [reana, setReana] = useState<Record<string, { demands: Candidate['demands']; elu: Candidate['profiles']['elu']; max: Candidate['maxMomentELU']; blockDesign: Candidate['blockDesign']; armorKey: string }>>({})
   const [reanaMsg, setReanaMsg] = useState('')
   const [asBuilt, setAsBuilt] = useState<Record<string, AsBuilt>>({})
 
@@ -111,7 +111,7 @@ export default function ResultsPage({ project, setProject, settings, cache, setC
     [baseRaw, asb],
   )
   // com reanálise, os esforços (e perfis) passam a ser os calculados com a armadura do usuário
-  const base: Candidate | undefined = useMemo(() => (baseA && ra ? { ...baseA, demands: ra.demands, maxMomentELU: ra.max, profiles: { ...baseA.profiles, elu: ra.elu } } : baseA), [baseA, ra])
+  const base: Candidate | undefined = useMemo(() => (baseA && ra ? { ...baseA, demands: ra.demands, maxMomentELU: ra.max, profiles: { ...baseA.profiles, elu: ra.elu }, blockDesign: ra.blockDesign.feasible ? ra.blockDesign : baseA.blockDesign } : baseA), [baseA, ra])
   const suggested = useMemo(() => (baseRaw ? armorFromDesign(baseRaw.design) : undefined), [baseRaw])
   const armor = armors[id] ?? suggested
   const armorEdited = !!armors[id]
@@ -137,7 +137,7 @@ export default function ResultsPage({ project, setProject, settings, cache, setC
       const r = reanalyzeELU(lastInput, baseA, designFromArmor(baseRaw.design, v, armor))
       if (r.unstable) return setReanaMsg('A reanálise indicou instabilidade (flambagem) com esta armadura.')
       if (!r.converged) return setReanaMsg('A análise não linear não convergiu: o momento excede a capacidade desta armadura. Aumente a armadura.')
-      setReana((m) => ({ ...m, [id]: { demands: { sets: r.sets, labels: r.labels }, elu: r.profile, max: r.max, armorKey: JSON.stringify(armor) } }))
+      setReana((m) => ({ ...m, [id]: { demands: { sets: r.sets, labels: r.labels }, elu: r.profile, max: r.max, blockDesign: r.blockDesign, armorKey: JSON.stringify(armor) } }))
     } catch (e) {
       setReanaMsg((e as Error).message)
     }

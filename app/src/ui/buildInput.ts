@@ -3,6 +3,7 @@ import { resolveCosts } from '../costs'
 import { groupByPillar } from '../core/loads'
 import type { OptimizeInput, OptimizeResult, Progress } from '../core/optimize'
 import type { PileType } from '../core/pile'
+import { pillarAnchorage } from '../core/block'
 import { OPTIMIZABLE_TYPES, lateralOptions, type Settings } from '../settings'
 import { pillarHoles, pillarSection, type Project } from './project'
 
@@ -46,6 +47,7 @@ export function buildInput(project: Project, settings: Settings, pillar: string,
   if (settings.lengthMode === 'fixo') fix = { ...fix, length: settings.lengthFixed }
   const types = OPTIMIZABLE_TYPES.filter((t) => settings.typesEnabled[t])
   const methods = (Object.keys(settings.methods) as (keyof Settings['methods'])[]).filter((m) => settings.methods[m])
+  const arr = project.pillars?.[pillar]?.arranque
   const input: OptimizeInput = {
     boreholes: holes, capacityMethods: methods, capacityCombine: settings.capacityCombine, tipUsePct: settings.tipUsePct, shaftUsePct: settings.shaftUsePct, capacityParams: settings.capParams, safety: { mode: settings.safetyMode, fsGlobal: settings.fsGlobal },
     pillar: { ax: sec.ax / 100, ay: sec.ay / 100 }, pillarArea: project.pillars?.[pillar]?.areaCm2 ? project.pillars[pillar].areaCm2! / 1e4 : undefined, combos, types,
@@ -56,9 +58,9 @@ export function buildInput(project: Project, settings: Settings, pillar: string,
     headFixity: settings.headFixity, execEccentricity: settings.execEccentricityCm / 100, blockUnitWeight: settings.blockUnitWeight,
     blockWeightFactorELU: settings.blockWeightFactorELU, blockMargin: settings.blockMarginCm / 100, blockKR: settings.blockKR, pileSpacingFactor: settings.pileSpacingFactor ?? undefined, blockEdgeClear: settings.blockEdgeRule === 'grande' ? 0.15 : settings.blockEdgeRule === 'pequeno' ? 0.05 : undefined, blockFck: settings.blockFck,
     blockAlpha: settings.blockAlpha, maxResults: settings.maxResults, fixed: fix,
-    lateralOptions: lateralOptions(settings, holes[0]?.id), structural: settings.structural,
+    lateralOptions: lateralOptions(settings, holes[0]?.id), lateralHoles: settings.lateralHoles, structural: settings.structural,
     blockThetaMin: settings.blockThetaMin, blockThetaMax: settings.blockThetaMax, blockMethod: settings.blockMethod, blockShape: settings.blockShape,
-    blockHMin: settings.blockHMinCm / 100, blockD1Factor: settings.blockD1Factor,
+    blockHMin: Math.max(settings.blockHMinCm / 100, arr ? pillarAnchorage(arr, settings.blockFck, settings.caa).hMin : 0), blockD1Factor: settings.blockD1Factor,
     softClayNspt: settings.softClayNspt,
     axialTransfer: settings.axialTransfer,
     negFriction: settings.negFriction.on
