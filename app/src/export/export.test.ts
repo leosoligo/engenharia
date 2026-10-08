@@ -38,6 +38,11 @@ describe('Exportação: tabela de ferros, DXF e memorial', () => {
     expect(dxf.split('\n0\nLINE\n').length).toBeGreaterThan(80)
     expect(dxf).not.toMatch(/NaN|Infinity|undefined/)
     expect(dxf.trimEnd().endsWith('EOF')).toBe(true)
+    // unidade = metro, tamanho real: estaca Ø0,50 m aparece como círculo de raio 0,25 e nada passa de dezenas de metros
+    expect(dxf).toMatch(/\n40\n0\.25\n/)
+    const xs = [...dxf.matchAll(/\n10\n(-?[\d.]+)\n20\n(-?[\d.]+)\n/g)].flatMap((m) => [Math.abs(+m[1]), Math.abs(+m[2])])
+    expect(Math.max(...xs)).toBeLessThan(40)
+    expect(dxf).toContain('$INSUNITS')
     if (process.env.DXF_OUT) writeFileSync(process.env.DXF_OUT, dxf)
   })
   it('memorial inclui a tabela de ferros', () => {

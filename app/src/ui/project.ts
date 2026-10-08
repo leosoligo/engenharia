@@ -22,7 +22,7 @@ export interface Project {
 
 export const TF = 9.80665 // kN por tf (e kN·m por tf·m)
 
-export interface PillarInfo { ax: number; ay: number; holes?: string[]; /** Área total (cm²) quando o bloco recebe dois pilares (ax, ay = caixa envolvente). */ areaCm2?: number }
+export interface PillarInfo { ax: number; ay: number; holes?: string[]; /** Área total (cm²) quando o bloco recebe dois pilares (ax, ay = caixa envolvente). */ areaCm2?: number; /** Armadura de arranque do pilar (opcional): se informada, a altura do bloco passa a ancorá-la. */ arranque?: { phiMm: number; hook?: boolean } }
 
 /** União de dois pilares num bloco: pilares originais, coordenadas (m) e combinações originais (para desfazer). */
 export interface PillarJoin {

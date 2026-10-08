@@ -1,6 +1,8 @@
 /**
  * Desenho de detalhamento em DXF (ASCII R12/AC1009; abre em AutoCAD, BricsCAD, LibreCAD etc.).
- * Unidade do desenho: centímetro. O formato DWG é proprietário: abra o DXF e salve como DWG, se necessário.
+ * Unidade do desenho: METRO, em tamanho real (1 unidade = 1 m; uma barra de 1 m mede 1,0). O código monta o desenho em
+ * centímetros e `Dxf` converte (×0,01) ao gravar. Escala de plotagem 1:25: alturas de texto = mm de papel × 25 / 1000.
+ * O formato DWG é proprietário: abra o DXF e salve como DWG, se necessário.
  *
  * Conteúdo (uma prancha em espaço-modelo): ficha da estaca, seção e estribo, elevação da estaca armada com ancoragem,
  * trechos de estribo e cotas (esc. 1:25), planta do bloco com estacas, cotas e armaduras, corte do bloco, detalhes das
@@ -22,23 +24,29 @@ class Dxf {
   layer(name: string, color: number, ltype = 'CONTINUOUS') {
     this.layers.set(name, { color, ltype })
   }
+  /** Coordenadas no código em cm; gravadas em metros. */
+  private m(v: number) {
+    return +(v * 0.01).toFixed(5)
+  }
   line(l: string, a: Pt, b: Pt) {
-    this.ents.push(['0', 'LINE', '8', l, '10', a[0], '20', a[1], '30', 0, '11', b[0], '21', b[1], '31', 0].join('\n'))
+    this.ents.push(['0', 'LINE', '8', l, '10', this.m(a[0]), '20', this.m(a[1]), '30', 0, '11', this.m(b[0]), '21', this.m(b[1]), '31', 0].join('\n'))
   }
   poly(l: string, pts: Pt[], closed = false) {
     for (let i = 0; i < pts.length - 1; i++) this.line(l, pts[i], pts[i + 1])
     if (closed && pts.length > 2) this.line(l, pts[pts.length - 1], pts[0])
   }
   circle(l: string, c: Pt, r: number) {
-    this.ents.push(['0', 'CIRCLE', '8', l, '10', c[0], '20', c[1], '30', 0, '40', r].join('\n'))
+    this.ents.push(['0', 'CIRCLE', '8', l, '10', this.m(c[0]), '20', this.m(c[1]), '30', 0, '40', this.m(r)].join('\n'))
   }
   rect(l: string, a: Pt, b: Pt) {
     this.poly(l, [a, [b[0], a[1]], b, [a[0], b[1]]], true)
   }
   /** Texto (esquerda). Ø, ° e ± viram códigos %%c, %%d, %%p; acentos são removidos para compatibilidade com leitores antigos. */
-  text(l: string, p: Pt, h: number, s: string, rot = 0) {
+  text(l: string, p: Pt, h: number, s: string, rot = 0, just: 0 | 1 | 2 = 0) {
     const t = s.replace(/[≥≤≈×·–—²³γαθφρξΔº]/g, (m) => SYM[m] ?? '').replace(/Ø/g, '%%c').replace(/°/g, '%%d').replace(/±/g, '%%p').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\x20-\x7e]/g, '?')
-    this.ents.push(['0', 'TEXT', '8', l, '10', p[0], '20', p[1], '30', 0, '40', h, '1', t, ...(rot ? ['50', rot] : [])].join('\n'))
+    // justificação feita pelo CAD (72 = esquerda/centro/direita; ponto de alinhamento em 11/21): independe da fonte
+    const al = just ? ['72', just, '11', this.m(p[0]), '21', this.m(p[1]), '31', 0] : []
+    this.ents.push(['0', 'TEXT', '8', l, '10', this.m(p[0]), '20', this.m(p[1]), '30', 0, '40', this.m(h), '1', t, ...(rot ? ['50', rot] : []), ...al].join('\n'))
   }
   /** Largura estimada do texto (fonte padrão de CAD ≈ 0,78·h por caractere). */
   width(s: string, h: number) {
@@ -51,14 +59,13 @@ class Dxf {
     return t === s ? s : t.slice(0, -2) + '..'
   }
   textC(l: string, p: Pt, h: number, s: string, rot = 0) {
-    const w = this.width(s, h)
-    this.text(l, rot ? [p[0], p[1] - w / 2] : [p[0] - w / 2, p[1]], h, s, rot)
+    this.text(l, p, h, s, rot, 1)
   }
   textR(l: string, p: Pt, h: number, s: string) {
-    this.text(l, [p[0] - this.width(s, h), p[1]], h, s)
+    this.text(l, p, h, s, 0, 2)
   }
   /** Cota linear (horizontal ou vertical): linhas de chamada, linha de cota, traços a 45° e texto. off > 0: para cima/direita. */
-  dim(a: Pt, b: Pt, off: number, label: string, h = 4.5) {
+  dim(a: Pt, b: Pt, off: number, label: string, h = 5.5) {
     const horiz = Math.abs(b[1] - a[1]) <= Math.abs(b[0] - a[0])
     const A: Pt = horiz ? [a[0], a[1] + off] : [a[0] + off, a[1]]
     const B: Pt = horiz ? [b[0], b[1] + off] : [b[0] + off, b[1]]
@@ -81,13 +88,13 @@ class Dxf {
   toString(): string {
     const lt = [
       ['CONTINUOUS', 'Solid line', []],
-      ['DASHED', 'Dashed', [6, -3]],
-      ['CENTER', 'Center', [20, -4, 4, -4]],
+      ['DASHED', 'Dashed', [0.06, -0.03]],
+      ['CENTER', 'Center', [0.2, -0.04, 0.04, -0.04]],
     ] as [string, string, number[]][]
     const ltypes = lt.map(([n, d, p]) => ['0', 'LTYPE', '2', n, '70', 0, '3', d, '72', 65, '73', p.length, '40', p.reduce((a, b) => a + Math.abs(b), 0), ...p.flatMap((v) => ['49', v])].join('\n'))
     const lay = [...this.layers.entries()].map(([n, v]) => ['0', 'LAYER', '2', n, '70', 0, '62', v.color, '6', v.ltype].join('\n'))
     return [
-      '0', 'SECTION', '2', 'HEADER', '9', '$ACADVER', '1', 'AC1009', '0', 'ENDSEC',
+      '0', 'SECTION', '2', 'HEADER', '9', '$ACADVER', '1', 'AC1009', '9', '$INSUNITS', '70', 6, '9', '$MEASUREMENT', '70', 1, '0', 'ENDSEC',
       '0', 'SECTION', '2', 'TABLES',
       '0', 'TABLE', '2', 'LTYPE', '70', lt.length, ltypes.join('\n'), '0', 'ENDTAB',
       '0', 'TABLE', '2', 'LAYER', '70', this.layers.size, lay.join('\n'), '0', 'ENDTAB',
@@ -107,9 +114,10 @@ export interface DxfContext {
   dateISO?: string
 }
 
-const T = 5 // texto corrente (cm no desenho; ≈ 2 mm em 1:25)
-const TS = 4
-const TH = 7
+/** Alturas de texto em cm reais, para plotagem 1:25: T = 2,4 mm; TS = 2,0 mm; TH = 3,2 mm de papel. */
+const T = 6
+const TS = 5
+const TH = 8
 
 export function buildDxf(c: Candidate, ctx: DxfContext): string {
   const d = new Dxf()
@@ -153,8 +161,8 @@ export function buildDxf(c: Candidate, ctx: DxfContext): string {
   let yA = -(head.length * 11 + 10) - 20
 
   // seção e estribo (1:10 → fator 2,5; D maior usa 1:20 ou 1:25)
-  const fs = D <= 60 ? 2.5 : D <= 100 ? 1.25 : 1
-  const escSec = fs === 2.5 ? '1:10' : fs === 1.25 ? '1:20' : '1:25'
+  const fs = 1 // tamanho real (a escala de plotagem é única: 1:25)
+  const escSec = '1:25'
   const secR = (D / 2) * fs
   const secC: Pt = [AX + 90, yA - 20 - secR - 14]
   d.text('TEXTO', [AX + 8, yA - 8], TH, `SECAO - ESC. ${escSec}`)
@@ -162,7 +170,7 @@ export function buildDxf(c: Candidate, ctx: DxfContext): string {
   d.circle('ARM_ESTRIBO', secC, (D / 2 - cover) * fs)
   for (let k = 0; k < nBars; k++) {
     const a = (2 * Math.PI * k) / nBars
-    d.circle('ARM_LONG', [secC[0] + Rs * fs * Math.sin(a), secC[1] - Rs * fs * Math.cos(a)], Math.max((l.phiMm / 20) * fs, 1.2))
+    d.circle('ARM_LONG', [secC[0] + Rs * fs * Math.sin(a), secC[1] - Rs * fs * Math.cos(a)], Math.max((l.phiMm / 20) * fs, 0.4))
   }
   d.dim([secC[0] - secR, secC[1] - secR], [secC[0] + secR, secC[1] - secR], -10, `${f(D, 1)} cm`)
   d.text('TEXTO', [secC[0] + secR + 14, secC[1] + 6], T, `${nBars} N1 Ø${phiTxt(l.phiMm)}`)
@@ -428,7 +436,7 @@ export function buildDxf(c: Candidate, ctx: DxfContext): string {
   const nx = xs[xs.length - 1] + 50
   d.text('TEXTO', [nx, yt + 8], TH + 1, 'NOTAS')
   const notes = [
-    '1. Cotas em centimetros, salvo indicacao em contrario.',
+    '1. Desenho em metros, tamanho real (1 unidade = 1 m); cotas escritas em centimetros. Plotar 1:25.',
     `2. Cobrimento: estaca ${f(cover, 1)} cm; bloco ${f(cov, 1)} cm (NBR 6118, Tab. 7.2, contato com o solo).`,
     '3. Aco CA-50, exceto Ø5,0 (CA-60). Ganchos das barras do bloco a 135 graus.',
     `4. Armadura da estaca: gaiola de ${f(cage, 0)} cm${anch > 0 ? ` + ${f(anch, 0)} cm de ancoragem no bloco` : ''}; comprimento minimo e ancoragem conforme NBR 6122 (Tab. 4) e NBR 6118 (9.4).`,
@@ -443,7 +451,7 @@ export function buildDxf(c: Candidate, ctx: DxfContext): string {
   d.line('QUADRO', [nx, cyt - 24], [nx + 330, cyt - 24])
   d.text('TEXTO', [nx + 6, cyt - 17], TH + 2, `FUNDACAO EM ESTACAS - ${ctx.title ?? 'PILAR'}`)
   d.text('TEXTO', [nx + 6, cyt - 36], T, `${np} estaca(s) ${PILE_LABEL[c.type]} Ø${f(D, 0)} cm, L = ${f(L, 0)} cm; bloco ${f(lx, 0)} x ${f(ly, 0)} x ${f(h, 0)} cm`)
-  d.text('TEXTO', [nx + 6, cyt - 47], T, `Escalas: planta, corte e elevacao 1:25; secao e estribo ${escSec}`)
+  d.text('TEXTO', [nx + 6, cyt - 47], T, `Unidade: metro, tamanho real. Plotar na escala 1:25 (texto 2,4 mm)`)
   d.text('TEXTO', [nx + 6, cyt - 58], T, `Data: ${ctx.dateISO ?? new Date().toISOString().slice(0, 10)}`)
 
   const xmax = Math.max(nx + 440, px0 + lx / 2 + 260)
