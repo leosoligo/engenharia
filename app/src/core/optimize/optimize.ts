@@ -137,6 +137,8 @@ export interface OptimizeInput {
   /** Percentual (%) das resistências de ponta e lateral usado (padrão 100). */
   tipUsePct?: number
   /** Percentual de ponta específico de um método (sobrepõe `tipUsePct` nele). */
+  /** Quantos números de estacas acima do inicial (Campos §11.1.1) são tentados; padrão 3. */
+  pileCountWindow?: number
   tipUsePctByMethod?: Partial<Record<CapacityMethod, number>>
   shaftUsePct?: number
   capacityParams?: CapacityParams
@@ -813,7 +815,7 @@ function* optimizeSteps(inp: OptimizeInput): Generator<Progress, OptimizeResult>
       const spacingMin = minSpacing(type, D, soilClassOf(inp.boreholes[0], zTop + zMaxL))
       const spacing = inp.pileSpacingFactor ? Math.max(inp.pileSpacingFactor * D, 0.3) : spacingMin
       const n0 = initialPileCount(Nmax, capMax, hasMoment)
-      const counts = inp.fixed?.n ? [inp.fixed.n] : LAYOUT_COUNTS.filter((n) => n >= n0 && n <= n0 + 3)
+      const counts = inp.fixed?.n ? [inp.fixed.n] : LAYOUT_COUNTS.filter((n) => n >= n0 && n <= n0 + (inp.pileCountWindow ?? 3))
       for (const n of counts) {
         for (const layout of layoutsFor(n, spacing)) {
           if (inp.fixed?.layoutId && layout.id !== inp.fixed.layoutId) continue
