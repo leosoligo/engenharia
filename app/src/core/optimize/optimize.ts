@@ -139,6 +139,8 @@ export interface OptimizeInput {
   /** Percentual de ponta específico de um método (sobrepõe `tipUsePct` nele). */
   /** Quantos números de estacas acima do inicial (Campos §11.1.1) são tentados; padrão 3. */
   pileCountWindow?: number
+  /** fck máximo (MPa) a que o bloco pode subir ao procurar atender as bielas; padrão 40. */
+  blockFckMax?: number
   tipUsePctByMethod?: Partial<Record<CapacityMethod, number>>
   shaftUsePct?: number
   capacityParams?: CapacityParams
@@ -723,7 +725,7 @@ function evaluateCandidate(
     const reactions = eluRes.map(({ combo, res }) => ({ name: combo.name, P: res.piles.map((p) => p.axial), Nsd: combo.fz }))
     let bd: BlockResult | undefined
     let blockInput!: BlockInput
-    for (const fckB of [...new Set([inp.blockFck ?? 30, 35, 40].filter((v) => v >= (inp.blockFck ?? 30)))]) {
+    for (const fckB of [...new Set([inp.blockFck ?? 30, 35, 40].filter((v) => v >= (inp.blockFck ?? 30) && v <= (inp.blockFckMax ?? 40)))]) {
       blockInput = {
         piles: layout.points, dE: D, pillar: inp.pillar, pillarArea: inp.pillarArea, fckBlock: fckB, caa: inp.caa, combos: reactions, serviceMaxP: maxComp,
         edgeMargin: inp.blockMargin ?? 0.15, edgeClear: inp.blockEdgeClear, alphaSides: inp.blockAlpha ?? 0.8, thetaMin: inp.blockThetaMin, thetaMax: inp.blockThetaMax, method: inp.blockMethod, kr: inp.blockKR, hMin: inp.blockHMin, d1Factor: inp.blockD1Factor, shape: inp.blockShape,
