@@ -44,3 +44,17 @@ describe('CSV com seção do pilar (colunas opcionais ax e ay, cm)', () => {
     expect(parseLoadsCsv('pilar;combinacao;tipo;fx;fy;fz;mx;my\nP1;a;ELS;0;0;100;0;0').sections).toBeUndefined()
   })
 })
+
+describe('área real do pilar (coluna opcional)', () => {
+  const head = 'pilar;combinacao;tipo;fx;fy;fz;mx;my;ax;ay;area\n'
+  it('lê a área e valida contra a caixa', () => {
+    const ok = parseLoadsCsv(head + 'P1;C1;ELU;0;0;100;0;0;215;214;11514\n')
+    expect(ok.errors).toEqual([])
+    expect(ok.sections?.P1).toEqual({ ax: 215, ay: 214, areaCm2: 11514 })
+    expect(parseLoadsCsv(head + 'P1;C1;ELU;0;0;100;0;0;20;20;500\n').errors[0]).toMatch(/área do pilar inválida/)
+  })
+  it('sem a coluna, a seção não traz área', () => {
+    const r = parseLoadsCsv('pilar;combinacao;tipo;fx;fy;fz;mx;my;ax;ay\nP1;C1;ELU;0;0;100;0;0;30;40\n')
+    expect(r.sections?.P1).toEqual({ ax: 30, ay: 40 })
+  })
+})

@@ -3,6 +3,7 @@
  *
  * Colunas (cabeçalho obrigatório, ordem livre, sem diferenciar maiúsculas/acentos):
  *   pilar ; combinacao ; tipo ; fx ; fy ; fz ; mx ; my [; mz]
+ * - coluna opcional area (cm²): área real da seção quando difere da caixa ax·ay (pilar em U, L…); vale para o pilar.
  * - tipo: ELU (valores de cálculo) ou ELS (valores característicos/de serviço);
  * - unidades: kN e kN·m; separador `;` ou `,`; decimal com vírgula ou ponto; linhas que começam com `#` são ignoradas.
  *
@@ -33,7 +34,7 @@ export interface LoadsParseResult {
   combinations: LoadCombination[]
   errors: string[]
   /** Seções dos pilares (cm), se o CSV trouxer as colunas opcionais ax e ay (dimensões em X e Y). */
-  sections?: Record<string, { ax: number; ay: number }>
+  sections?: Record<string, { ax: number; ay: number; areaCm2?: number }>
 }
 
 const norm = (s: string) =>
@@ -70,13 +71,14 @@ export function parseLoadsCsv(text: string): LoadsParseResult {
     mz: col('mz'),
     ax: col('ax', 'bx', 'ax_cm'),
     ay: col('ay', 'by', 'ay_cm'),
+    area: col('area', 'area_cm2', 'areacm2', 'area_cm'),
   }
   for (const k of ['pillar', 'name', 'state', 'fx', 'fy', 'fz', 'mx', 'my'] as const)
     if (idx[k] < 0) errors.push(`Coluna obrigatória ausente: "${k === 'pillar' ? 'pilar' : k === 'name' ? 'combinacao' : k === 'state' ? 'tipo' : k}".`)
   if (errors.length) return { combinations: [], errors }
 
   const out: LoadCombination[] = []
-  const sections: Record<string, { ax: number; ay: number }> = {}
+  const sections: Record<string, { ax: number; ay: number; areaCm2?: number }> = {}
   const seen = new Set<string>()
   lines.slice(1).forEach((line, k) => {
     const ln = k + 2
@@ -96,10 +98,15 @@ export function parseLoadsCsv(text: string): LoadsParseResult {
     if (seen.has(key)) return errors.push(`Linha ${ln}: combinação "${name}" (${st}) repetida para o pilar ${pillar}.`)
     seen.add(key)
     if (idx.ax >= 0 && idx.ay >= 0 && c[idx.ax]?.trim() && c[idx.ay]?.trim()) {
-      const s = { ax: num(c[idx.ax]), ay: num(c[idx.ay]) }
+      const s: { ax: number; ay: number; areaCm2?: number } = { ax: num(c[idx.ax]), ay: num(c[idx.ay]) }
       if (!(s.ax > 0 && s.ay > 0)) return errors.push(`Linha ${ln}: seção do pilar inválida (ax, ay > 0, em cm).`)
+      if (idx.area >= 0 && c[idx.area]?.trim()) {
+        const a = num(c[idx.area])
+        if (!(a > 0 && a <= s.ax * s.ay + 1e-6)) return errors.push(`Linha ${ln}: área do pilar inválida (0 < área ≤ ax·ay, em cm²; lido "${c[idx.area]}").`)
+        s.areaCm2 = a
+      }
       const prev = sections[pillar]
-      if (prev && (prev.ax !== s.ax || prev.ay !== s.ay)) return errors.push(`Linha ${ln}: o pilar ${pillar} tem seções diferentes no arquivo.`)
+      if (prev && (prev.ax !== s.ax || prev.ay !== s.ay || prev.areaCm2 !== s.areaCm2)) return errors.push(`Linha ${ln}: o pilar ${pillar} tem seções diferentes no arquivo.`)
       sections[pillar] = s
     }
     out.push({ pillar, name, state: st, ...v })

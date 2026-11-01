@@ -40,7 +40,7 @@ export default function LoadsPage({ project, setProject, onExample, onBack, onNe
   const arr = project.pillars?.[project.pillar]?.arranque
   const setInfo = (patch: Partial<{ ax: number; ay: number; holes: string[]; arranque: { phiMm: number; hook?: boolean } | undefined }>) =>
     setProject({ ...project, pillars: { ...project.pillars, [project.pillar]: { ax: sec.ax, ay: sec.ay, holes: ownHoles, ...project.pillars?.[project.pillar], ...patch } } })
-  const importCombos = (cs: LoadCombination[], sections: Record<string, { ax: number; ay: number }>) => {
+  const importCombos = (cs: LoadCombination[], sections: Record<string, { ax: number; ay: number; areaCm2?: number }>) => {
     const names = new Set(cs.map((c) => c.pillar))
     const pillars = { ...project.pillars }
     for (const [n, s] of Object.entries(sections)) pillars[n] = { ...pillars[n], ...s }
