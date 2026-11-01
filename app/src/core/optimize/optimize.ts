@@ -136,6 +136,8 @@ export interface OptimizeInput {
   capacityCombine?: 'menor' | 'media'
   /** Percentual (%) das resistências de ponta e lateral usado (padrão 100). */
   tipUsePct?: number
+  /** Percentual de ponta específico de um método (sobrepõe `tipUsePct` nele). */
+  tipUsePctByMethod?: Partial<Record<CapacityMethod, number>>
   shaftUsePct?: number
   capacityParams?: CapacityParams
   safety?: SafetyOptions
@@ -287,7 +289,7 @@ function capacityTable(inp: OptimizeInput, type: PileType, D: number): CapacityT
   const run = { 'aoki-velloso': aokiVelloso, 'decourt-quaresma': decourtQuaresma, teixeira }
   const warnings: string[] = []
   const perMethod = methods.map((m) => inp.boreholes.map((b) => {
-    const r = run[m](b, { pile: { type, diameter: D }, params: inp.capacityParams, tipFactor: (inp.tipUsePct ?? 100) / 100, shaftFactor: (inp.shaftUsePct ?? 100) / 100 })
+    const r = run[m](b, { pile: { type, diameter: D }, params: inp.capacityParams, tipFactor: (inp.tipUsePctByMethod?.[m] ?? inp.tipUsePct ?? 100) / 100, shaftFactor: (inp.shaftUsePct ?? 100) / 100 })
     warnings.push(...r.warnings)
     return r.rows
   }))
