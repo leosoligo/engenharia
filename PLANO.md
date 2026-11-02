@@ -337,3 +337,6 @@ Workflow `.github/workflows/pages.yml`: a cada push na `main` (ou execução man
 
 ## 38. Área real do pilar na importação de cargas (v1.21)
 Coluna opcional `area` (cm²) no CSV de cargas: área real da seção quando difere da caixa ax·ay (pilares em U, L etc.). Validada (0 < área ≤ ax·ay), por pilar, e gravada como `areaCm2` do pilar, que o cálculo já usava no pilar equivalente das bielas. Testes em `loads.test.ts`.
+
+## 39. Arranjos retangulares de 8 e 12 estacas (v1.22)
+Novos arranjos em `layoutsFor`: 8 estacas em 4×2 (`8x`) e 2×4 (`8y`); 12 estacas em 6×2 (`12a`) e 2×6 (`12b`). Úteis para núcleos rígidos com momento forte, onde se quer bloco estreito e comprido (evita sobrepor blocos vizinhos). Também novos parâmetros internos de otimização: `tipUsePctByMethod` (percentual de ponta por método), `pileCountWindow` (quantos números de estacas acima do inicial são tentados; padrão 3) e `blockFckMax` (fck máximo do bloco; padrão 40). Nota: com pilar mais largo que o espaçamento das estacas (núcleo em U de 2,15 m sobre estacas a 2,1 m), a seção S2 do CEB-70 reprova; o bloco só fecha pelo método de bielas (Blévot), a conferir com modelo refinado.
