@@ -136,6 +136,12 @@ export interface OptimizeInput {
   capacityCombine?: 'menor' | 'media'
   /** Percentual (%) das resistências de ponta e lateral usado (padrão 100). */
   tipUsePct?: number
+  /** Percentual de ponta específico de um método (sobrepõe `tipUsePct` nele). */
+  /** Quantos números de estacas acima do inicial (Campos §11.1.1) são tentados; padrão 3. */
+  pileCountWindow?: number
+  /** fck máximo (MPa) a que o bloco pode subir ao procurar atender as bielas; padrão 40. */
+  blockFckMax?: number
+  tipUsePctByMethod?: Partial<Record<CapacityMethod, number>>
   shaftUsePct?: number
   capacityParams?: CapacityParams
   safety?: SafetyOptions
@@ -287,7 +293,7 @@ function capacityTable(inp: OptimizeInput, type: PileType, D: number): CapacityT
   const run = { 'aoki-velloso': aokiVelloso, 'decourt-quaresma': decourtQuaresma, teixeira }
   const warnings: string[] = []
   const perMethod = methods.map((m) => inp.boreholes.map((b) => {
-    const r = run[m](b, { pile: { type, diameter: D }, params: inp.capacityParams, tipFactor: (inp.tipUsePct ?? 100) / 100, shaftFactor: (inp.shaftUsePct ?? 100) / 100 })
+    const r = run[m](b, { pile: { type, diameter: D }, params: inp.capacityParams, tipFactor: (inp.tipUsePctByMethod?.[m] ?? inp.tipUsePct ?? 100) / 100, shaftFactor: (inp.shaftUsePct ?? 100) / 100 })
     warnings.push(...r.warnings)
     return r.rows
   }))
@@ -719,7 +725,7 @@ function evaluateCandidate(
     const reactions = eluRes.map(({ combo, res }) => ({ name: combo.name, P: res.piles.map((p) => p.axial), Nsd: combo.fz }))
     let bd: BlockResult | undefined
     let blockInput!: BlockInput
-    for (const fckB of [...new Set([inp.blockFck ?? 30, 35, 40].filter((v) => v >= (inp.blockFck ?? 30)))]) {
+    for (const fckB of [...new Set([inp.blockFck ?? 30, 35, 40].filter((v) => v >= (inp.blockFck ?? 30) && v <= (inp.blockFckMax ?? 40)))]) {
       blockInput = {
         piles: layout.points, dE: D, pillar: inp.pillar, pillarArea: inp.pillarArea, fckBlock: fckB, caa: inp.caa, combos: reactions, serviceMaxP: maxComp,
         edgeMargin: inp.blockMargin ?? 0.15, edgeClear: inp.blockEdgeClear, alphaSides: inp.blockAlpha ?? 0.8, thetaMin: inp.blockThetaMin, thetaMax: inp.blockThetaMax, method: inp.blockMethod, kr: inp.blockKR, hMin: inp.blockHMin, d1Factor: inp.blockD1Factor, shape: inp.blockShape,
@@ -811,7 +817,7 @@ function* optimizeSteps(inp: OptimizeInput): Generator<Progress, OptimizeResult>
       const spacingMin = minSpacing(type, D, soilClassOf(inp.boreholes[0], zTop + zMaxL))
       const spacing = inp.pileSpacingFactor ? Math.max(inp.pileSpacingFactor * D, 0.3) : spacingMin
       const n0 = initialPileCount(Nmax, capMax, hasMoment)
-      const counts = inp.fixed?.n ? [inp.fixed.n] : LAYOUT_COUNTS.filter((n) => n >= n0 && n <= n0 + 3)
+      const counts = inp.fixed?.n ? [inp.fixed.n] : LAYOUT_COUNTS.filter((n) => n >= n0 && n <= n0 + (inp.pileCountWindow ?? 3))
       for (const n of counts) {
         for (const layout of layoutsFor(n, spacing)) {
           if (inp.fixed?.layoutId && layout.id !== inp.fixed.layoutId) continue

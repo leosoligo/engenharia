@@ -94,13 +94,20 @@ export function layoutsFor(n: number, s: number): Layout[] {
     case 7:
       return [mk('7', 'Sete: hexágono com estaca central', [...ring(6, s), { x: 0, y: 0 }])]
     case 8:
-      return [mk('8', 'Oito: malha 3×3 sem a central', rect(3, 3, s, (i, j) => i === 1 && j === 1))]
+      return [
+        mk('8', 'Oito: malha 3×3 sem a central', rect(3, 3, s, (i, j) => i === 1 && j === 1)),
+        mk('8x', 'Oito: 4×2 (4 em X)', rect(4, 2, s)),
+        mk('8y', 'Oito: 2×4 (4 em Y)', rect(2, 4, s)),
+      ]
     case 9:
       return [mk('9', 'Nove: malha 3×3', rect(3, 3, s))]
     case 10:
       return [mk('10x', 'Dez: 5×2 (5 em X)', rect(5, 2, s)), mk('10y', 'Dez: 2×5 (5 em Y)', rect(2, 5, s))]
     case 12:
-      return [mk('12x', 'Doze: 4×3 (4 em X)', rect(4, 3, s)), mk('12y', 'Doze: 3×4 (4 em Y)', rect(3, 4, s))]
+      return [
+        mk('12x', 'Doze: 4×3 (4 em X)', rect(4, 3, s)), mk('12y', 'Doze: 3×4 (4 em Y)', rect(3, 4, s)),
+        mk('12a', 'Doze: 6×2 (6 em X)', rect(6, 2, s)), mk('12b', 'Doze: 2×6 (6 em Y)', rect(2, 6, s)),
+      ]
     default:
       return []
   }
